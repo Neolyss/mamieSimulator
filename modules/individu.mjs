@@ -1,12 +1,15 @@
-//définition des classes
-class Individu{
+/**définition des classes**/
+import { getRandomInt } from './utils.mjs';
+//classe qui représente les individus
+class Individu {
     fitness;
 	x;
 	y;
 	genome = [];
 	enVie;
+    sizeOfTheCanvas;
 
-    constructor(){
+    constructor(sizeOfTheCanvas){
 		this.x = 1;
 		this.y = 1;
 		this.fitness = 0;
@@ -17,6 +20,8 @@ class Individu{
         this.genome[2] = getRandomInt(20);
 
 		this.enVie = true;
+
+        this.sizeOfTheCanvas  = sizeOfTheCanvas;
 	}
 
     getX(){
@@ -35,6 +40,4 @@ class Individu{
 	}
 }
 
-function getRandomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
-}
+export {Individu};
