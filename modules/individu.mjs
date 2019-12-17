@@ -7,11 +7,10 @@ class Individu {
 	y;
 	genome = [];
 	enVie;
-    sizeOfTheCanvas;
 
-    constructor(sizeOfTheCanvas){
-		this.x = 1;
-		this.y = 1;
+    constructor(canvasWidth,canvasHeight){
+		this.x = getRandomInt(canvasWidth);
+		this.y =  getRandomInt(canvasHeight);
 		this.fitness = 0;
 		this.step = 0;
         //initialisation du génome
@@ -20,8 +19,6 @@ class Individu {
         this.genome[2] = getRandomInt(20);
 
 		this.enVie = true;
-
-        this.sizeOfTheCanvas  = sizeOfTheCanvas;
 	}
 
     getX(){

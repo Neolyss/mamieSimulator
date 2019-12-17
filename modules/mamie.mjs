@@ -5,14 +5,30 @@ class Mamie{
     y;
     directionX;
     directionY;
-    constructor(sizeOfTheCanvas){
-        this.x = getRandomInt(sizeOfTheCanvas);
-        this.y = getRandomInt(sizeOfTheCanvas);
+    constructor(canvasWidth,canvasHeight) {
+        this.x = getRandomInt(canvasWidth);
+        this.y = getRandomInt(canvasHeight);
+    }
+
+    getX(){
+        return this.x;
+    }
+
+    getY(){
+        return this.y;
     }
 
     deplacer(){
         this.x = this.x + this.directionX;
         this.y = this.y + this.directionY;
+    }
+
+    rebondirX(){
+        this.directionX = - this.directionX;
+    }
+
+    rebondirY(){
+        this.directionY = - this.directionY;
     }
 }
 
