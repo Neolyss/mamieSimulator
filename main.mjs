@@ -1,30 +1,40 @@
 import { Individu } from './modules/individu.mjs';
-import { Mamie } from './modules/mamie.mjs'; 
+import { Mamie } from './modules/mamie.mjs';
+import { getRandomInt } from './modules/utils.mjs';
+
 
 //variables
 let individus = [];
 let mamies = [];
 
+let nbEnVie;
 let nbIndividus;
 
 let canvas = document.getElementById("myCanvas");
 let ctx = canvas.getContext("2d");
 let buttonStart = document.getElementById("start");
 
+//Constantes :
+var probaMutation = document.getElementById("probaMutation").value;
+
+let generation = 1;
+
 buttonStart.addEventListener("click", main);
 // Appel du main
 main();
 
 function main() {
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    clear();
     nbIndividus = document.getElementById("nbIndividu").value;
+    nbEnVie = nbIndividus;
     genererMamies();
     genererPopDepart();
     afficherPopulation();
     afficherMamies();
+    Itterer();
 }
 
+// Créer la population de mamie
 function genererMamies(){
     mamies = [];
 	for (var i = 0 ; i<10 ; i++){
@@ -32,6 +42,7 @@ function genererMamies(){
 	}
 }
 
+// Génère la population d'individus
 function genererPopDepart(){
     individus = [];
 	for (var i = 0 ; i<nbIndividus ; i++){
@@ -39,97 +50,176 @@ function genererPopDepart(){
 	}
 }
 
+// Efface le canvas
+function clear(){
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// Affichage des mamies
 function afficherMamies() {
     for (let mamie of mamies) {
-        ctx.fillStyle = "#FF0000";
-        ctx.fillRect(mamie.getX(),mamie.getY(),10,10);
+        let img = new Image();
+        img.src = '../img/Mamie_vieillard.png';
+        ctx.drawImage(img,mamie.getX(),mamie.getY(),30,50);
     }
 }
 
+// Affichage des individus
 function afficherPopulation() {
     for (let individu of individus) {
-        ctx.fillStyle = "#0000FF";
-        ctx.fillRect(individu.getX(),individu.getY(),5,5);
+        if(individu.enVie){
+            let img = new Image();
+            img.src = '../img/Perso_etudiant.png';
+            ctx.drawImage(img,individu.getX(),individu.getY(),30,30);
+        }
     }
 }
-//Constantes :
-var probaMutation = document.getElementById("probaMutation").value;
-
-var nbParents = document.getElementById("nbParents").value;
-
-
-var generation = 0;
-var bestFitness = 0;
-var individuFinal;
-var vitesseAnimation = document.getElementById("vitesse").value;
 
 function nouvelleGeneration(){
-    //Calcul de la fitness pour tous les individus
-	for(var i=0;i<individus.length;i++){
-		individus[i].calculerFitness();
-	}
     //Tri des individus en fonction de leur fitness
 	individus.sort(function(a, b) {
   		return b.fitness - a.fitness;
 	});
-    //Calcul de la mailleur fitness
-	if(individus[0].fitness>bestFitness){
-		bestFitness = individus[0].fitness;
-	}
-    //On écrit sur la page la meilleur fitness
-	document.getElementById("meilleurFitness").innerHTML = "Meilleure fitness : "+ bestFitness;
 
-    //La 2nd moitié de la nouvelle génération mute
-	for (var i = (nbParents*nbIndividus)/2 ; i<nbIndividus ; i++){
-		muter(individus[i]);
+    let newIndividus = selection(individus);
+
+    //La nouvelle génération mute
+	for (var i = 0 ; i<newIndividus.length ; i++){
+        if(newIndividus[i] instanceof Individu) {
+            console.log("lucas" + i);
+        }
+		muter(newIndividus[i]);
 	}
 
-    //le nombre de génération incrémente
+    // Création de la nouvelle population
+    individus = newIndividus;
+
+    // Le nombre de génération incrémente
 	generation++;
+    // Actualisation du nombre de la génération
 	document.getElementById("generation").innerHTML = "Génération : "+ generation;
-
-    //On passe à l'étape suivante
-	//Itterer();
 }
 
-function selection(oldGeneration){
+function selection(oldIndividus){
     //On sauvegarde la vielle génération dans oldIndividus
     var newGeneration = [];
 
     //la première moitié de la vielle génération deviens la première moitié de la nouvelle génération
-    for(var i = 0 ; i<Math.round(nbParents*nbIndividus)/2;i++){
+    //L'ancienne génération crée de nouveaux individus, ce qui rempli l'autre moitié de la nouvelle génération
+    for(var i=0; i<nbIndividus/2; i++){
+        console.log(Math.round(nbIndividus/2)-i);
+        newGeneration[i] = reproduire(oldIndividus[0],oldIndividus[Math.round(nbIndividus/2)-i]);
+    }
+    for(var i=Math.round(nbIndividus/2); i<nbIndividus; i++){
         newGeneration[i] = oldIndividus[i];
-        newGeneration[i].x = 1;
-        newGeneration[i].y = 1;
+        if(newGeneration[i]==undefined || newGeneration[i]== null){
+            newGeneration[i] = new Individu(canvas.width,canvas.height);
+        }
+        newGeneration[i].x = getRandomInt(canvas.width);
+        newGeneration[i].y = getRandomInt(canvas.height);
         newGeneration[i].fitness = 0;
-        newGeneration[i].step = 0;
         newGeneration[i].enVie = true;
     }
-    //La vielle génération baise dur, ce qui rempli l'autre moitié de la nouvelle génération
-    for(var i = Math.round(nbParents*nbIndividus)/2 ; i<nbIndividus;i++){
-        newGeneration[i] = reproduire(oldIndividus[0],oldIndividus[i-Math.round(0.5*nbIndividus)]);
-    }
-
     //On return la nouvelle génération
     return newGeneration;
 }
-function reproduire(individu1,individu2){
-	var individu = new Individu();
-	for(var i =0;i<individu.genome.length;i+=2){
-		try{
-			individu.genome[i] = individu1.genome[i];
-			individu.genome[i+1] = individu2.genome[i+1];
-		}catch(e){
 
-		}
+// Génère la reproduction de deux individus
+function reproduire(individu1,individu2){
+	let individu = new Individu(canvas.width,canvas.height);
+	for(let i = 0 ; i<3 ; i++){
+		individu.genome[i] = (individu1.genome[0] + individu2.genome[0])/2.0;
+        individu.genome[i] = (individu1.genome[1] + individu2.genome[1])/2.0;
 	}
 	return individu;
 }
 
+// Permet aux individus de muter
 function muter(individu){
 	for (var i = 0; i < individu.genome.length; i++) {
 		if(Math.random()<probaMutation){
-			individu.genome[i] = getRandomInt(20);
-		}
+			individu.genome[i] = individu.genome[0]++;
+		}else if(Math.random()<probaMutation){
+            individu.genome[i] = individu.genome[0]--;
+        }
 	}
+}
+
+function Itterer(){
+    //Calculs
+
+    //Déplacement des mamies
+    for(let mamie of mamies){
+        var distance = 100000000;
+        var plusProche = null;
+        for(let individu of individus){
+            if(individu.enVie){
+                var distanceTemp =  Math.sqrt((individu.getX() - mamie.getX())*(individu.getX() - mamie.getX()) + (individu.getY() - mamie.getY())*(individu.getY() - mamie.getY()) );
+                if(distanceTemp < distance){
+                    distance = distanceTemp;
+                    plusProche = individu;
+                }
+            }
+        }
+        if(plusProche!=null){
+            if(plusProche.getX() - mamie.getX() < 0){
+                mamie.setDirectionX(-1);
+            }else{
+                mamie.setDirectionX(1);
+            }
+            if(plusProche.getY() - mamie.getY() < 0){
+                mamie.setDirectionY(-1);
+            }else{
+                mamie.setDirectionY(1);
+            }
+            mamie.deplacer();
+        }
+    }
+
+    // Déplacement des individus
+    for(let individu of individus){
+        var distance = 100000000;
+        var plusProche = null;
+        for(let mamie of mamies){
+            var distanceTemp =  Math.sqrt((individu.getX() - mamie.getX())*(individu.getX() - mamie.getX()) + (individu.getY() - mamie.getY())*(individu.getY() - mamie.getY()) );
+            if(distanceTemp < distance){
+                distance = distanceTemp;
+                plusProche = mamie;
+            }
+        }
+        if(distance <10 && individu.enVie){
+            individu.enVie = false;
+            nbEnVie--;
+            console.log("En vie : " + nbEnVie);
+        }
+        if(plusProche!=null && distance<individu.genome[0]){
+            if(plusProche.getX() - individu.getX() < 0){
+                individu.setDirectionX(individu.genome[1]);
+            }else{
+                individu.setDirectionX(-individu.genome[1]);
+            }
+
+            if(plusProche.getY() - individu.getY() < 0){
+                individu.setDirectionY(individu.genome[1]);
+            }else{
+                individu.setDirectionY(-individu.genome[1]);
+            }
+            individu.deplacer();
+        }
+    }
+
+    clear();
+    afficherMamies();
+    afficherPopulation();
+
+    //Si il n'y a plus d'individus, on créer une nouvelle génération
+    if(nbEnVie<=0){
+        nouvelleGeneration();
+        afficherPopulation();
+        nbEnVie = nbIndividus;
+    }
+
+    // Permet de boucler, pour avoir l'affichage et les calculs
+    setTimeout(Itterer,25);
 }

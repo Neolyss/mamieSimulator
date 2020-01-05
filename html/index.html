@@ -12,36 +12,12 @@
     <div style="display: flex;">
         <canvas id="myCanvas" width="1600" height="800"></canvas>
         <div style="width: 33vw">
+            <p id='generation'>Génération 1</p>
+            <br/>
             <text>Nombre d'individus par générations:</text><br>
             <input id="nbIndividu" value="100"><br><br>
             <text>Probabilité de mutation d'un gène</text><br>
             <input id="probaMutation" value="0.05"><br><br>
-            <text>nombre de parents dans la génération suivante</text><br>
-            <input id="nbParents" value="0.2"><br><br>
-            <text>Vitesse animation</text><br>
-            <input id="vitesse" value="100" onkeyup="changerVitesse()"><br><br>
-            <text>Vitesse animation</text><br>
-            <input id="vitesse" value="100" onkeyup="changerVitesse()"><br><br>
-            <text>Méthode de crossover</text><br>
-            <input list="crossOverMethod" name="crossover">
-            <datalist id="crossOverMethod">
-                 <option value="Single-point">
-                 <option value="Two-point">
-                 <option value="k-point">
-                 <option value="Uniform">
-            </datalist>
-            <br/>
-            <text>Méthode de selection</text><br>
-            <input list="selectionMethod" name="selection">
-            <datalist id="selectionMethod">
-                 <option value="Roulette Wheel">
-                 <option value="Rank">
-                 <option value="Steady State">
-                 <option value="Tournament">
-                 <option value="Elitism">
-            </datalist>
-            <br/>
-            <br/>
             <button id="start">START</button>
         </div>
     </div>
